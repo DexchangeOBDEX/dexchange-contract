@@ -1,14 +1,14 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 /// @title Contract for Dexchange app
 /// @author Amit Sharma
 /// @notice The contract may be updated over period of time
-contract DeXchange is Ownable {
+contract Dexchange is Ownable {
     using ECDSA for bytes32;
 
     address public feeAccount;
@@ -28,16 +28,10 @@ contract DeXchange is Ownable {
         uint256 balance
     );
 
-    event Trade(
-        uint256 id,
-        address user,
-        address tokenGet,
-        uint256 amountGet,
-        address tokenGive,
-        uint256 amountGive,
-        address creator,
-        uint256 timestamp
-    );
+    constructor(address _feeAccount, uint256 _feePercent) {
+        feeAccount = _feeAccount;
+        feePercent = _feePercent;
+    }
 
     /// @notice The function to set the trade fee.
     /// @dev This will be modified to ownable function to enable updates in future.
@@ -108,9 +102,9 @@ contract DeXchange is Ownable {
 
     struct Order {
         string nonce;
-        address walletAddress;
-        uint256 quantity;
-        bytes walletSignature;
+        address user;
+        uint256 amount;
+        bytes signature;
     }
 
     struct OrderBookTrade {
@@ -127,46 +121,39 @@ contract DeXchange is Ownable {
         Order memory _sell,
         OrderBookTrade memory _order
     ) external {
-        (uint256 buyQuantity, uint256 sellQuantity) = verifyAndInvalidateHash(
-            _buy,
-            _sell,
-            _order
-        );
-        require(buyQuantity != 0 && sellQuantity != 0);
+        uint256 orderAmount = verify(_buy, _sell, _order);
+        require(orderAmount != 0);
 
-        uint256 _feeAmountBuyer = (buyQuantity * feePercent) / 100;
-        uint256 _feeAmountSeller = (sellQuantity * feePercent) / 100;
+        uint256 buyAmount = (orderAmount * 1e8) / _order.rate;
+        uint256 _feeAmountBuyer = (orderAmount * feePercent) / 100;
+        uint256 _feeAmountSeller = (buyAmount * feePercent) / 100;
 
-        require(
-            tokensBalance[_order.quoteAsset][_buy.walletAddress] >= sellQuantity
-        );
-        require(
-            tokensBalance[_order.baseAsset][_sell.walletAddress] >= buyQuantity
-        );
+        require(tokensBalance[_order.quoteAsset][_buy.user] >= buyAmount);
+        require(tokensBalance[_order.baseAsset][_sell.user] >= orderAmount);
 
         tokensBalance[_order.baseAsset][feeAccount] += _feeAmountBuyer;
         tokensBalance[_order.quoteAsset][feeAccount] += _feeAmountSeller;
 
-        tokensBalance[_order.quoteAsset][_buy.walletAddress] -= sellQuantity;
-        tokensBalance[_order.baseAsset][_sell.walletAddress] -= buyQuantity;
-        tokensBalance[_order.quoteAsset][_sell.walletAddress] += (_sell
-            .quantity - _feeAmountSeller);
-        tokensBalance[_order.baseAsset][_buy.walletAddress] += (buyQuantity -
+        tokensBalance[_order.quoteAsset][_buy.user] -= buyAmount;
+        tokensBalance[_order.baseAsset][_sell.user] -= orderAmount;
+        tokensBalance[_order.quoteAsset][_sell.user] += (buyAmount -
+            _feeAmountSeller);
+        tokensBalance[_order.baseAsset][_buy.user] += (orderAmount -
             _feeAmountBuyer);
     }
 
-    function verifyAndInvalidateHash(
+    function verify(
         Order memory _buyOrder,
         Order memory _sellOrder,
         OrderBookTrade memory orderBookTrade
-    ) internal returns (uint256 buyQuantity, uint256 sellQuantity) {
+    ) internal returns (uint256 orderAmount) {
         bytes32 messageHashBuyer = getHash(
             _buyOrder.nonce,
-            _buyOrder.walletAddress,
+            _buyOrder.user,
             orderBookTrade.market,
             orderBookTrade.orderType,
             orderBookTrade.orderSide,
-            _buyOrder.quantity
+            _buyOrder.amount
         );
         bytes32 signedMessageHashBuyer = messageHashBuyer
             .toEthSignedMessageHash();
@@ -175,18 +162,17 @@ contract DeXchange is Ownable {
             !_completedOrderHashes[signedMessageHashBuyer],
             "Order already executed!"
         );
-        address buyer = signedMessageHashBuyer.recover(
-            _buyOrder.walletSignature
-        );
-        require(buyer == _buyOrder.walletAddress, "Invalid signature");
+
+        address buyer = signedMessageHashBuyer.recover(_buyOrder.signature);
+        require(buyer == _buyOrder.user, "Invalid signature");
 
         bytes32 messageHashSeller = getHash(
             _sellOrder.nonce,
-            _sellOrder.walletAddress,
+            _sellOrder.user,
             orderBookTrade.market,
             orderBookTrade.orderType,
             orderBookTrade.orderSide,
-            _sellOrder.quantity
+            _sellOrder.amount
         );
         bytes32 signedMessageHashSeller = messageHashSeller
             .toEthSignedMessageHash();
@@ -195,31 +181,29 @@ contract DeXchange is Ownable {
             !_completedOrderHashes[signedMessageHashSeller],
             "Order already executed!"
         );
-        address seller = signedMessageHashSeller.recover(
-            _sellOrder.walletSignature
-        );
-        require(seller == _sellOrder.walletAddress, "Invalid signature");
 
-        buyQuantity = _buyOrder.quantity = _partiallyFilledOrderQuantity[
+        address seller = signedMessageHashSeller.recover(_sellOrder.signature);
+        require(seller == _sellOrder.user, "Invalid signature");
+
+        uint256 buyAmount = _buyOrder.amount = _partiallyFilledOrderQuantity[
             signedMessageHashBuyer
         ];
-        sellQuantity = _sellOrder.quantity = _partiallyFilledOrderQuantity[
+        uint256 sellAmount = _sellOrder.amount = _partiallyFilledOrderQuantity[
             signedMessageHashSeller
         ];
 
-        if (buyQuantity == sellQuantity) {
+        if (buyAmount == sellAmount) {
             _completedOrderHashes[signedMessageHashBuyer] = true;
             _completedOrderHashes[signedMessageHashSeller] = true;
-        } else if (buyQuantity < sellQuantity) {
+            return buyAmount;
+        } else if (buyAmount < sellAmount) {
             _completedOrderHashes[signedMessageHashBuyer] = true;
-            _partiallyFilledOrderQuantity[
-                signedMessageHashSeller
-            ] += sellQuantity;
+            _partiallyFilledOrderQuantity[signedMessageHashSeller] += buyAmount;
+            return buyAmount;
         } else {
             _completedOrderHashes[signedMessageHashSeller] = true;
-            _partiallyFilledOrderQuantity[
-                signedMessageHashBuyer
-            ] += buyQuantity;
+            _partiallyFilledOrderQuantity[signedMessageHashBuyer] += sellAmount;
+            return sellAmount;
         }
     }
 
@@ -242,44 +226,5 @@ contract DeXchange is Ownable {
                     _quantity
                 )
             );
-    }
-
-    /// @notice The abstraction for trade function, param are fetched from order.
-    /// @param _orderId order id to be filled.
-    /// @param _user user address who created the order
-    /// @param _tokenGet token user wants to get in exchange.
-    /// @param _amountGet amount user wants to get.
-    /// @param _tokenGive token user wants to give.
-    /// @param _amountGive amount user wants to give.
-    function _trade(
-        uint256 _orderId,
-        address _user,
-        address _tokenGet,
-        uint256 _amountGet,
-        address _tokenGive,
-        uint256 _amountGive
-    ) internal {
-        uint256 _feeAmount = (_amountGet * feePercent) / 100;
-
-        // msg.sender is the user who filled the order, while _user is who created order
-        tokensBalance[_tokenGet][msg.sender] -= (_amountGet + _feeAmount);
-        tokensBalance[_tokenGet][_user] += _amountGet;
-
-        // charge fee
-        tokensBalance[_tokenGet][feeAccount] += _feeAmount;
-
-        tokensBalance[_tokenGive][_user] -= _amountGive;
-        tokensBalance[_tokenGive][msg.sender] += _amountGive;
-
-        emit Trade(
-            _orderId,
-            msg.sender,
-            _tokenGet,
-            _amountGet,
-            _tokenGive,
-            _amountGive,
-            _user,
-            block.timestamp
-        );
     }
 }

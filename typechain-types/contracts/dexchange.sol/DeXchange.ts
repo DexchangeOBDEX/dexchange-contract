@@ -27,47 +27,82 @@ import type {
   PromiseOrValue,
 } from "../../common";
 
-export interface DeXchangeInterface extends utils.Interface {
+export declare namespace Dexchange {
+  export type OrderStruct = {
+    nonce: PromiseOrValue<string>;
+    user: PromiseOrValue<string>;
+    amount: PromiseOrValue<BigNumberish>;
+    signature: PromiseOrValue<BytesLike>;
+  };
+
+  export type OrderStructOutput = [string, string, BigNumber, string] & {
+    nonce: string;
+    user: string;
+    amount: BigNumber;
+    signature: string;
+  };
+
+  export type OrderBookTradeStruct = {
+    market: PromiseOrValue<string>;
+    orderType: PromiseOrValue<string>;
+    orderSide: PromiseOrValue<string>;
+    baseAsset: PromiseOrValue<string>;
+    quoteAsset: PromiseOrValue<string>;
+    rate: PromiseOrValue<BigNumberish>;
+  };
+
+  export type OrderBookTradeStructOutput = [
+    string,
+    string,
+    string,
+    string,
+    string,
+    BigNumber
+  ] & {
+    market: string;
+    orderType: string;
+    orderSide: string;
+    baseAsset: string;
+    quoteAsset: string;
+    rate: BigNumber;
+  };
+}
+
+export interface DexchangeInterface extends utils.Interface {
   functions: {
     "balanceOf(address,address)": FunctionFragment;
-    "cancelOrder(uint256)": FunctionFragment;
     "depositToken(address,uint256)": FunctionFragment;
     "feeAccount()": FunctionFragment;
     "feePercent()": FunctionFragment;
-    "fillOrder(uint256)": FunctionFragment;
-    "makeOrder(address,uint256,address,uint256)": FunctionFragment;
-    "orderBook(uint256)": FunctionFragment;
-    "orderCancelled(uint256)": FunctionFragment;
-    "orderCount()": FunctionFragment;
-    "orderFilled(uint256)": FunctionFragment;
+    "getHash(string,address,string,string,string,uint256)": FunctionFragment;
+    "owner()": FunctionFragment;
+    "renounceOwnership()": FunctionFragment;
+    "setFee(address,uint256)": FunctionFragment;
     "tokensBalance(address,address)": FunctionFragment;
+    "trade((string,address,uint256,bytes),(string,address,uint256,bytes),(string,string,string,address,address,uint256))": FunctionFragment;
+    "transferOwnership(address)": FunctionFragment;
     "withdrawToken(address,uint256)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
       | "balanceOf"
-      | "cancelOrder"
       | "depositToken"
       | "feeAccount"
       | "feePercent"
-      | "fillOrder"
-      | "makeOrder"
-      | "orderBook"
-      | "orderCancelled"
-      | "orderCount"
-      | "orderFilled"
+      | "getHash"
+      | "owner"
+      | "renounceOwnership"
+      | "setFee"
       | "tokensBalance"
+      | "trade"
+      | "transferOwnership"
       | "withdrawToken"
   ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "balanceOf",
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "cancelOrder",
-    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "depositToken",
@@ -82,37 +117,40 @@ export interface DeXchangeInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "fillOrder",
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "makeOrder",
+    functionFragment: "getHash",
     values: [
       PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>
     ]
   ): string;
+  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "orderBook",
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "orderCancelled",
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "orderCount",
+    functionFragment: "renounceOwnership",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "orderFilled",
-    values: [PromiseOrValue<BigNumberish>]
+    functionFragment: "setFee",
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "tokensBalance",
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "trade",
+    values: [
+      Dexchange.OrderStruct,
+      Dexchange.OrderStruct,
+      Dexchange.OrderBookTradeStruct
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "transferOwnership",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "withdrawToken",
@@ -121,29 +159,25 @@ export interface DeXchangeInterface extends utils.Interface {
 
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "cancelOrder",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "depositToken",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "feeAccount", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "feePercent", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "fillOrder", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "makeOrder", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "orderBook", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "getHash", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "orderCancelled",
+    functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "orderCount", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "orderFilled",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "setFee", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "tokensBalance",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "trade", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -152,35 +186,15 @@ export interface DeXchangeInterface extends utils.Interface {
   ): Result;
 
   events: {
-    "Cancel(uint256,address,address,uint256,address,uint256,uint256)": EventFragment;
     "Deposit(address,address,uint256,uint256)": EventFragment;
-    "OrderLogged(uint256,address,address,uint256,address,uint256,uint256)": EventFragment;
-    "Trade(uint256,address,address,uint256,address,uint256,address,uint256)": EventFragment;
+    "OwnershipTransferred(address,address)": EventFragment;
     "Withdraw(address,address,uint256,uint256)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "Cancel"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Deposit"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "OrderLogged"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Trade"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Withdraw"): EventFragment;
 }
-
-export interface CancelEventObject {
-  id: BigNumber;
-  user: string;
-  tokenGet: string;
-  amountGet: BigNumber;
-  tokenGive: string;
-  amountGive: BigNumber;
-  timestamp: BigNumber;
-}
-export type CancelEvent = TypedEvent<
-  [BigNumber, string, string, BigNumber, string, BigNumber, BigNumber],
-  CancelEventObject
->;
-
-export type CancelEventFilter = TypedEventFilter<CancelEvent>;
 
 export interface DepositEventObject {
   token: string;
@@ -195,38 +209,17 @@ export type DepositEvent = TypedEvent<
 
 export type DepositEventFilter = TypedEventFilter<DepositEvent>;
 
-export interface OrderLoggedEventObject {
-  id: BigNumber;
-  user: string;
-  tokenGet: string;
-  amountGet: BigNumber;
-  tokenGive: string;
-  amountGive: BigNumber;
-  timestamp: BigNumber;
+export interface OwnershipTransferredEventObject {
+  previousOwner: string;
+  newOwner: string;
 }
-export type OrderLoggedEvent = TypedEvent<
-  [BigNumber, string, string, BigNumber, string, BigNumber, BigNumber],
-  OrderLoggedEventObject
+export type OwnershipTransferredEvent = TypedEvent<
+  [string, string],
+  OwnershipTransferredEventObject
 >;
 
-export type OrderLoggedEventFilter = TypedEventFilter<OrderLoggedEvent>;
-
-export interface TradeEventObject {
-  id: BigNumber;
-  user: string;
-  tokenGet: string;
-  amountGet: BigNumber;
-  tokenGive: string;
-  amountGive: BigNumber;
-  creator: string;
-  timestamp: BigNumber;
-}
-export type TradeEvent = TypedEvent<
-  [BigNumber, string, string, BigNumber, string, BigNumber, string, BigNumber],
-  TradeEventObject
->;
-
-export type TradeEventFilter = TypedEventFilter<TradeEvent>;
+export type OwnershipTransferredEventFilter =
+  TypedEventFilter<OwnershipTransferredEvent>;
 
 export interface WithdrawEventObject {
   token: string;
@@ -241,12 +234,12 @@ export type WithdrawEvent = TypedEvent<
 
 export type WithdrawEventFilter = TypedEventFilter<WithdrawEvent>;
 
-export interface DeXchange extends BaseContract {
+export interface Dexchange extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: DeXchangeInterface;
+  interface: DexchangeInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -274,11 +267,6 @@ export interface DeXchange extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    cancelOrder(
-      _id: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
     depositToken(
       _token: PromiseOrValue<string>,
       _amount: PromiseOrValue<BigNumberish>,
@@ -289,51 +277,45 @@ export interface DeXchange extends BaseContract {
 
     feePercent(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    fillOrder(
-      _id: PromiseOrValue<BigNumberish>,
+    getHash(
+      _nonce: PromiseOrValue<string>,
+      _wallet: PromiseOrValue<string>,
+      _market: PromiseOrValue<string>,
+      _type: PromiseOrValue<string>,
+      _side: PromiseOrValue<string>,
+      _quantity: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
+    owner(overrides?: CallOverrides): Promise<[string]>;
+
+    renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    makeOrder(
-      _tokenGet: PromiseOrValue<string>,
-      _amountGet: PromiseOrValue<BigNumberish>,
-      _tokenGive: PromiseOrValue<string>,
-      _amountGive: PromiseOrValue<BigNumberish>,
+    setFee(
+      _feeAccount: PromiseOrValue<string>,
+      _feePercent: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
-
-    orderBook(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, string, string, BigNumber, string, BigNumber, BigNumber] & {
-        id: BigNumber;
-        user: string;
-        tokenGet: string;
-        amountGet: BigNumber;
-        tokenGive: string;
-        amountGive: BigNumber;
-        timestamp: BigNumber;
-      }
-    >;
-
-    orderCancelled(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
-    orderCount(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    orderFilled(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
 
     tokensBalance(
       arg0: PromiseOrValue<string>,
       arg1: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    trade(
+      _buy: Dexchange.OrderStruct,
+      _sell: Dexchange.OrderStruct,
+      _order: Dexchange.OrderBookTradeStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     withdrawToken(
       _token: PromiseOrValue<string>,
@@ -348,11 +330,6 @@ export interface DeXchange extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  cancelOrder(
-    _id: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   depositToken(
     _token: PromiseOrValue<string>,
     _amount: PromiseOrValue<BigNumberish>,
@@ -363,51 +340,45 @@ export interface DeXchange extends BaseContract {
 
   feePercent(overrides?: CallOverrides): Promise<BigNumber>;
 
-  fillOrder(
-    _id: PromiseOrValue<BigNumberish>,
+  getHash(
+    _nonce: PromiseOrValue<string>,
+    _wallet: PromiseOrValue<string>,
+    _market: PromiseOrValue<string>,
+    _type: PromiseOrValue<string>,
+    _side: PromiseOrValue<string>,
+    _quantity: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
+  owner(overrides?: CallOverrides): Promise<string>;
+
+  renounceOwnership(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  makeOrder(
-    _tokenGet: PromiseOrValue<string>,
-    _amountGet: PromiseOrValue<BigNumberish>,
-    _tokenGive: PromiseOrValue<string>,
-    _amountGive: PromiseOrValue<BigNumberish>,
+  setFee(
+    _feeAccount: PromiseOrValue<string>,
+    _feePercent: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
-
-  orderBook(
-    arg0: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<
-    [BigNumber, string, string, BigNumber, string, BigNumber, BigNumber] & {
-      id: BigNumber;
-      user: string;
-      tokenGet: string;
-      amountGet: BigNumber;
-      tokenGive: string;
-      amountGive: BigNumber;
-      timestamp: BigNumber;
-    }
-  >;
-
-  orderCancelled(
-    arg0: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
-  orderCount(overrides?: CallOverrides): Promise<BigNumber>;
-
-  orderFilled(
-    arg0: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
 
   tokensBalance(
     arg0: PromiseOrValue<string>,
     arg1: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
+
+  trade(
+    _buy: Dexchange.OrderStruct,
+    _sell: Dexchange.OrderStruct,
+    _order: Dexchange.OrderBookTradeStruct,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  transferOwnership(
+    newOwner: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   withdrawToken(
     _token: PromiseOrValue<string>,
@@ -422,11 +393,6 @@ export interface DeXchange extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    cancelOrder(
-      _id: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     depositToken(
       _token: PromiseOrValue<string>,
       _amount: PromiseOrValue<BigNumberish>,
@@ -437,51 +403,43 @@ export interface DeXchange extends BaseContract {
 
     feePercent(overrides?: CallOverrides): Promise<BigNumber>;
 
-    fillOrder(
-      _id: PromiseOrValue<BigNumberish>,
+    getHash(
+      _nonce: PromiseOrValue<string>,
+      _wallet: PromiseOrValue<string>,
+      _market: PromiseOrValue<string>,
+      _type: PromiseOrValue<string>,
+      _side: PromiseOrValue<string>,
+      _quantity: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    owner(overrides?: CallOverrides): Promise<string>;
+
+    renounceOwnership(overrides?: CallOverrides): Promise<void>;
+
+    setFee(
+      _feeAccount: PromiseOrValue<string>,
+      _feePercent: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    makeOrder(
-      _tokenGet: PromiseOrValue<string>,
-      _amountGet: PromiseOrValue<BigNumberish>,
-      _tokenGive: PromiseOrValue<string>,
-      _amountGive: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    orderBook(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, string, string, BigNumber, string, BigNumber, BigNumber] & {
-        id: BigNumber;
-        user: string;
-        tokenGet: string;
-        amountGet: BigNumber;
-        tokenGive: string;
-        amountGive: BigNumber;
-        timestamp: BigNumber;
-      }
-    >;
-
-    orderCancelled(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
-    orderCount(overrides?: CallOverrides): Promise<BigNumber>;
-
-    orderFilled(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
 
     tokensBalance(
       arg0: PromiseOrValue<string>,
       arg1: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    trade(
+      _buy: Dexchange.OrderStruct,
+      _sell: Dexchange.OrderStruct,
+      _order: Dexchange.OrderBookTradeStruct,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     withdrawToken(
       _token: PromiseOrValue<string>,
@@ -491,25 +449,6 @@ export interface DeXchange extends BaseContract {
   };
 
   filters: {
-    "Cancel(uint256,address,address,uint256,address,uint256,uint256)"(
-      id?: null,
-      user?: null,
-      tokenGet?: null,
-      amountGet?: null,
-      tokenGive?: null,
-      amountGive?: null,
-      timestamp?: null
-    ): CancelEventFilter;
-    Cancel(
-      id?: null,
-      user?: null,
-      tokenGet?: null,
-      amountGet?: null,
-      tokenGive?: null,
-      amountGive?: null,
-      timestamp?: null
-    ): CancelEventFilter;
-
     "Deposit(address,address,uint256,uint256)"(
       token?: null,
       user?: null,
@@ -523,45 +462,14 @@ export interface DeXchange extends BaseContract {
       balance?: null
     ): DepositEventFilter;
 
-    "OrderLogged(uint256,address,address,uint256,address,uint256,uint256)"(
-      id?: null,
-      user?: null,
-      tokenGet?: null,
-      amountGet?: null,
-      tokenGive?: null,
-      amountGive?: null,
-      timestamp?: null
-    ): OrderLoggedEventFilter;
-    OrderLogged(
-      id?: null,
-      user?: null,
-      tokenGet?: null,
-      amountGet?: null,
-      tokenGive?: null,
-      amountGive?: null,
-      timestamp?: null
-    ): OrderLoggedEventFilter;
-
-    "Trade(uint256,address,address,uint256,address,uint256,address,uint256)"(
-      id?: null,
-      user?: null,
-      tokenGet?: null,
-      amountGet?: null,
-      tokenGive?: null,
-      amountGive?: null,
-      creator?: null,
-      timestamp?: null
-    ): TradeEventFilter;
-    Trade(
-      id?: null,
-      user?: null,
-      tokenGet?: null,
-      amountGet?: null,
-      tokenGive?: null,
-      amountGive?: null,
-      creator?: null,
-      timestamp?: null
-    ): TradeEventFilter;
+    "OwnershipTransferred(address,address)"(
+      previousOwner?: PromiseOrValue<string> | null,
+      newOwner?: PromiseOrValue<string> | null
+    ): OwnershipTransferredEventFilter;
+    OwnershipTransferred(
+      previousOwner?: PromiseOrValue<string> | null,
+      newOwner?: PromiseOrValue<string> | null
+    ): OwnershipTransferredEventFilter;
 
     "Withdraw(address,address,uint256,uint256)"(
       token?: null,
@@ -584,11 +492,6 @@ export interface DeXchange extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    cancelOrder(
-      _id: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
     depositToken(
       _token: PromiseOrValue<string>,
       _amount: PromiseOrValue<BigNumberish>,
@@ -599,40 +502,44 @@ export interface DeXchange extends BaseContract {
 
     feePercent(overrides?: CallOverrides): Promise<BigNumber>;
 
-    fillOrder(
-      _id: PromiseOrValue<BigNumberish>,
+    getHash(
+      _nonce: PromiseOrValue<string>,
+      _wallet: PromiseOrValue<string>,
+      _market: PromiseOrValue<string>,
+      _type: PromiseOrValue<string>,
+      _side: PromiseOrValue<string>,
+      _quantity: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    owner(overrides?: CallOverrides): Promise<BigNumber>;
+
+    renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    makeOrder(
-      _tokenGet: PromiseOrValue<string>,
-      _amountGet: PromiseOrValue<BigNumberish>,
-      _tokenGive: PromiseOrValue<string>,
-      _amountGive: PromiseOrValue<BigNumberish>,
+    setFee(
+      _feeAccount: PromiseOrValue<string>,
+      _feePercent: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    orderBook(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    orderCancelled(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    orderCount(overrides?: CallOverrides): Promise<BigNumber>;
-
-    orderFilled(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     tokensBalance(
       arg0: PromiseOrValue<string>,
       arg1: PromiseOrValue<string>,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    trade(
+      _buy: Dexchange.OrderStruct,
+      _sell: Dexchange.OrderStruct,
+      _order: Dexchange.OrderBookTradeStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     withdrawToken(
@@ -649,11 +556,6 @@ export interface DeXchange extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    cancelOrder(
-      _id: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
     depositToken(
       _token: PromiseOrValue<string>,
       _amount: PromiseOrValue<BigNumberish>,
@@ -664,40 +566,44 @@ export interface DeXchange extends BaseContract {
 
     feePercent(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    fillOrder(
-      _id: PromiseOrValue<BigNumberish>,
+    getHash(
+      _nonce: PromiseOrValue<string>,
+      _wallet: PromiseOrValue<string>,
+      _market: PromiseOrValue<string>,
+      _type: PromiseOrValue<string>,
+      _side: PromiseOrValue<string>,
+      _quantity: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    makeOrder(
-      _tokenGet: PromiseOrValue<string>,
-      _amountGet: PromiseOrValue<BigNumberish>,
-      _tokenGive: PromiseOrValue<string>,
-      _amountGive: PromiseOrValue<BigNumberish>,
+    setFee(
+      _feeAccount: PromiseOrValue<string>,
+      _feePercent: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    orderBook(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    orderCancelled(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    orderCount(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    orderFilled(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     tokensBalance(
       arg0: PromiseOrValue<string>,
       arg1: PromiseOrValue<string>,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    trade(
+      _buy: Dexchange.OrderStruct,
+      _sell: Dexchange.OrderStruct,
+      _order: Dexchange.OrderBookTradeStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    transferOwnership(
+      newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     withdrawToken(
