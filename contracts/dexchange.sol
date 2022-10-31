@@ -2,6 +2,7 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
@@ -9,28 +10,38 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 /// @author Amit Sharma
 /// @notice The contract may be updated over period of time
 contract Dexchange is Ownable {
+    using SafeERC20 for IERC20;
     using ECDSA for bytes32;
 
+    address public forwarder;
     address public feeAccount;
     uint256 public feePercent;
 
     mapping(address => mapping(address => uint256)) public tokensBalance;
-    mapping(bytes32 => bool) private _completedOrderHashes;
+    mapping(bytes32 => bool) private _nonces;
     mapping(bytes32 => uint256) private _partiallyFilledOrderQuantity;
 
     /// @notice Events emitted by the contract.
-    event Deposit(address token, address user, uint256 amount, uint256 balance);
+    event Deposit(address token, address user, uint256 amount);
+    event Withdraw(address token, address user, uint256 amount);
 
-    event Withdraw(
-        address token,
-        address user,
-        uint256 amount,
-        uint256 balance
-    );
-
-    constructor(address _feeAccount, uint256 _feePercent) {
+    constructor(
+        address _forwarder,
+        address _feeAccount,
+        uint256 _feePercent
+    ) {
+        forwarder = _forwarder;
         feeAccount = _feeAccount;
         feePercent = _feePercent;
+    }
+
+    modifier onlyForwarder() {
+        require(msg.sender == forwarder);
+        _;
+    }
+
+    function setForwarder(address _forwarder) external onlyOwner {
+        forwarder = _forwarder;
     }
 
     /// @notice The function to set the trade fee.
@@ -48,50 +59,38 @@ contract Dexchange is Ownable {
     /************************************** DEPOSIT & WITHDRAW TOKENS *************************************************************/
 
     /// @notice The function to deposit tokens from user wallet to the contract.
-    /// @param _token The address of the token to be deposited.
-    /// @param _amount Takes number as input for the amount of token to be deposited.
-    function depositToken(address _token, uint256 _amount) public {
-        // Transfer tokens to exchange
-        require(
-            IERC20(_token).transferFrom(msg.sender, address(this), _amount),
-            "depositToken: Error in depositing tokens"
-        );
-        // update user balance
-        tokensBalance[_token][msg.sender] += _amount;
-        // Emit event
-        emit Deposit(
-            _token,
-            msg.sender,
-            _amount,
-            tokensBalance[_token][msg.sender]
-        );
+    //TODO: Only allow forwarder
+    function depositToken(
+        address _token,
+        address _owner,
+        uint256 _value,
+        string memory _nonce,
+        bytes memory _signature
+    ) external {
+        _verifySig(_token, _owner, _value, _nonce, _signature);
+        IERC20(_token).safeTransferFrom(_owner, address(this), _value);
+        tokensBalance[_token][_owner] += _value;
+        emit Deposit(_token, _owner, _value);
     }
 
     /// @notice The function to withdraw tokens from the contract to the user wallet.
-    /// @param _token The address of the token to be withdrawn.
-    /// @param _amount Takes number as input for the amount of token to be withdrawn.
-    function withdrawToken(address _token, uint256 _amount) public {
-        // Ensure user has enough tokens to withdraw
-        require(tokensBalance[_token][msg.sender] >= _amount);
-
-        // Update the balance
-        tokensBalance[_token][msg.sender] -= _amount;
-
-        // Transfer tokens to the user
-        IERC20(_token).transfer(msg.sender, _amount);
-
-        // Emit an event
-        emit Withdraw(
-            _token,
-            msg.sender,
-            _amount,
-            tokensBalance[_token][msg.sender]
-        );
+    //TODO: Only allow forwarder
+    function withdrawToken(
+        address _token,
+        address _owner,
+        uint256 _value,
+        string memory _nonce,
+        bytes memory _signature
+    ) external {
+        _verifySig(_token, _owner, _value, _nonce, _signature);
+        tokensBalance[_token][_owner] -= _value;
+        IERC20(_token).safeTransfer(_owner, _value);
+        emit Withdraw(_token, _owner, _value);
     }
 
     /// @notice check balance of tokens held by user in the contract
     function balanceOf(address _token, address _user)
-        public
+        external
         view
         returns (uint256)
     {
@@ -153,15 +152,13 @@ contract Dexchange is Ownable {
             orderBookTrade.market,
             orderBookTrade.orderType,
             orderBookTrade.orderSide,
-            _buyOrder.amount
+            _buyOrder.amount,
+            orderBookTrade.rate
         );
         bytes32 signedMessageHashBuyer = messageHashBuyer
             .toEthSignedMessageHash();
 
-        require(
-            !_completedOrderHashes[signedMessageHashBuyer],
-            "Order already executed!"
-        );
+        require(!_nonces[signedMessageHashBuyer], "Order already executed!");
 
         address buyer = signedMessageHashBuyer.recover(_buyOrder.signature);
         require(buyer == _buyOrder.user, "Invalid signature");
@@ -172,15 +169,13 @@ contract Dexchange is Ownable {
             orderBookTrade.market,
             orderBookTrade.orderType,
             orderBookTrade.orderSide,
-            _sellOrder.amount
+            _sellOrder.amount,
+            orderBookTrade.rate
         );
         bytes32 signedMessageHashSeller = messageHashSeller
             .toEthSignedMessageHash();
 
-        require(
-            !_completedOrderHashes[signedMessageHashSeller],
-            "Order already executed!"
-        );
+        require(!_nonces[signedMessageHashSeller], "Order already executed!");
 
         address seller = signedMessageHashSeller.recover(_sellOrder.signature);
         require(seller == _sellOrder.user, "Invalid signature");
@@ -193,15 +188,15 @@ contract Dexchange is Ownable {
         ];
 
         if (buyAmount == sellAmount) {
-            _completedOrderHashes[signedMessageHashBuyer] = true;
-            _completedOrderHashes[signedMessageHashSeller] = true;
+            _nonces[signedMessageHashBuyer] = true;
+            _nonces[signedMessageHashSeller] = true;
             return buyAmount;
         } else if (buyAmount < sellAmount) {
-            _completedOrderHashes[signedMessageHashBuyer] = true;
+            _nonces[signedMessageHashBuyer] = true;
             _partiallyFilledOrderQuantity[signedMessageHashSeller] += buyAmount;
             return buyAmount;
         } else {
-            _completedOrderHashes[signedMessageHashSeller] = true;
+            _nonces[signedMessageHashSeller] = true;
             _partiallyFilledOrderQuantity[signedMessageHashBuyer] += sellAmount;
             return sellAmount;
         }
@@ -213,18 +208,45 @@ contract Dexchange is Ownable {
         string memory _market,
         string memory _type,
         string memory _side,
-        uint256 _quantity
-    ) public pure returns (bytes32) {
+        uint256 _quantity,
+        uint256 _rate
+    ) public view returns (bytes32) {
         return
             keccak256(
                 abi.encodePacked(
+                    block.chainid,
                     _nonce,
                     _wallet,
                     _market,
                     _type,
                     _side,
-                    _quantity
+                    _quantity,
+                    _rate
                 )
             );
+    }
+
+    function _verifySig(
+        address _token,
+        address _owner,
+        uint256 _value,
+        string memory _nonce,
+        bytes memory _signature
+    ) internal {
+        bytes32 hash = keccak256(
+            abi.encodePacked(
+                block.chainid,
+                _nonce,
+                _token,
+                _owner,
+                address(this),
+                _value
+            )
+        );
+        bytes32 signedHash = hash.toEthSignedMessageHash();
+        require(!_nonces[signedHash], "Invalid nonce");
+        address signer = signedHash.recover(_signature);
+        require(_owner == signer, "Invalid signature");
+        _nonces[signedHash] = true;
     }
 }

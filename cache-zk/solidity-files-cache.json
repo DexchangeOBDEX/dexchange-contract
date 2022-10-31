@@ -1,9 +1,9 @@
 {
   "_format": "hh-sol-cache-2",
   "files": {
-    "/mnt/c/Users/Chaitanya/Documents/Projects/dexchange/dexchange/contracts/dexchange.sol": {
-      "lastModificationDate": 1666762413796,
-      "contentHash": "ba23c252558457d28369cba6216f5310",
+    "/mnt/c/Users/chaitanya/Documents/projects/dexchange/dexchange/contracts/dexchange.sol": {
+      "lastModificationDate": 1667200503607,
+      "contentHash": "8e515fb801f2d8821c1a43bc62938ba1",
       "sourceName": "contracts/dexchange.sol",
       "solcConfig": {
         "version": "0.8.16",
@@ -27,13 +27,13 @@
           }
         },
         "zksolc": {
-          "version": "1.1.6",
+          "version": "1.2.0",
           "compilerSource": "docker",
           "settings": {
             "compilerPath": "",
             "experimental": {
               "dockerImage": "matterlabs/zksolc",
-              "tag": "v1.1.6"
+              "tag": "v1.2.0"
             },
             "optimizer": {
               "enabled": true
@@ -43,6 +43,7 @@
       },
       "imports": [
         "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol",
         "@openzeppelin/contracts/access/Ownable.sol",
         "@openzeppelin/contracts/utils/cryptography/ECDSA.sol"
       ],
@@ -53,8 +54,8 @@
         "Dexchange"
       ]
     },
-    "/mnt/c/Users/Chaitanya/Documents/Projects/dexchange/dexchange/node_modules/@openzeppelin/contracts/access/Ownable.sol": {
-      "lastModificationDate": 1666762948678,
+    "/mnt/c/Users/chaitanya/Documents/projects/dexchange/dexchange/node_modules/@openzeppelin/contracts/access/Ownable.sol": {
+      "lastModificationDate": 1667200262006,
       "contentHash": "e436cea06129be2c73cda4b1acc848b5",
       "sourceName": "@openzeppelin/contracts/access/Ownable.sol",
       "solcConfig": {
@@ -79,13 +80,13 @@
           }
         },
         "zksolc": {
-          "version": "1.1.6",
+          "version": "1.2.0",
           "compilerSource": "docker",
           "settings": {
             "compilerPath": "",
             "experimental": {
               "dockerImage": "matterlabs/zksolc",
-              "tag": "v1.1.6"
+              "tag": "v1.2.0"
             },
             "optimizer": {
               "enabled": true
@@ -103,8 +104,8 @@
         "Ownable"
       ]
     },
-    "/mnt/c/Users/Chaitanya/Documents/Projects/dexchange/dexchange/node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol": {
-      "lastModificationDate": 1666763000499,
+    "/mnt/c/Users/chaitanya/Documents/projects/dexchange/dexchange/node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol": {
+      "lastModificationDate": 1667200316710,
       "contentHash": "ad7c2d0af148c8f9f097d65deeb4da6b",
       "sourceName": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
       "solcConfig": {
@@ -129,13 +130,13 @@
           }
         },
         "zksolc": {
-          "version": "1.1.6",
+          "version": "1.2.0",
           "compilerSource": "docker",
           "settings": {
             "compilerPath": "",
             "experimental": {
               "dockerImage": "matterlabs/zksolc",
-              "tag": "v1.1.6"
+              "tag": "v1.2.0"
             },
             "optimizer": {
               "enabled": true
@@ -151,8 +152,8 @@
         "IERC20"
       ]
     },
-    "/mnt/c/Users/Chaitanya/Documents/Projects/dexchange/dexchange/node_modules/@openzeppelin/contracts/utils/cryptography/ECDSA.sol": {
-      "lastModificationDate": 1666763000554,
+    "/mnt/c/Users/chaitanya/Documents/projects/dexchange/dexchange/node_modules/@openzeppelin/contracts/utils/cryptography/ECDSA.sol": {
+      "lastModificationDate": 1667200317065,
       "contentHash": "e240957102529c3ccf73bcf4527bcddc",
       "sourceName": "@openzeppelin/contracts/utils/cryptography/ECDSA.sol",
       "solcConfig": {
@@ -177,13 +178,13 @@
           }
         },
         "zksolc": {
-          "version": "1.1.6",
+          "version": "1.2.0",
           "compilerSource": "docker",
           "settings": {
             "compilerPath": "",
             "experimental": {
               "dockerImage": "matterlabs/zksolc",
-              "tag": "v1.1.6"
+              "tag": "v1.2.0"
             },
             "optimizer": {
               "enabled": true
@@ -201,8 +202,60 @@
         "ECDSA"
       ]
     },
-    "/mnt/c/Users/Chaitanya/Documents/Projects/dexchange/dexchange/node_modules/@openzeppelin/contracts/utils/Context.sol": {
-      "lastModificationDate": 1666762949365,
+    "/mnt/c/Users/chaitanya/Documents/projects/dexchange/dexchange/node_modules/@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol": {
+      "lastModificationDate": 1667200338830,
+      "contentHash": "3a843b05b85a270e9455e3d2e804e633",
+      "sourceName": "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol",
+      "solcConfig": {
+        "version": "0.8.16",
+        "settings": {
+          "optimizer": {
+            "enabled": true
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        },
+        "zksolc": {
+          "version": "1.2.0",
+          "compilerSource": "docker",
+          "settings": {
+            "compilerPath": "",
+            "experimental": {
+              "dockerImage": "matterlabs/zksolc",
+              "tag": "v1.2.0"
+            },
+            "optimizer": {
+              "enabled": true
+            }
+          }
+        }
+      },
+      "imports": [
+        "../IERC20.sol",
+        "../extensions/draft-IERC20Permit.sol",
+        "../../../utils/Address.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "SafeERC20"
+      ]
+    },
+    "/mnt/c/Users/chaitanya/Documents/projects/dexchange/dexchange/node_modules/@openzeppelin/contracts/utils/Context.sol": {
+      "lastModificationDate": 1667200262143,
       "contentHash": "5f2c5c4b6af2dd4551027144797bc8be",
       "sourceName": "@openzeppelin/contracts/utils/Context.sol",
       "solcConfig": {
@@ -227,13 +280,13 @@
           }
         },
         "zksolc": {
-          "version": "1.1.6",
+          "version": "1.2.0",
           "compilerSource": "docker",
           "settings": {
             "compilerPath": "",
             "experimental": {
               "dockerImage": "matterlabs/zksolc",
-              "tag": "v1.1.6"
+              "tag": "v1.2.0"
             },
             "optimizer": {
               "enabled": true
@@ -249,8 +302,8 @@
         "Context"
       ]
     },
-    "/mnt/c/Users/Chaitanya/Documents/Projects/dexchange/dexchange/node_modules/@openzeppelin/contracts/utils/Strings.sol": {
-      "lastModificationDate": 1666762949505,
+    "/mnt/c/Users/chaitanya/Documents/projects/dexchange/dexchange/node_modules/@openzeppelin/contracts/utils/Strings.sol": {
+      "lastModificationDate": 1667200262250,
       "contentHash": "cf46906c4035f51639a22265066a9e78",
       "sourceName": "@openzeppelin/contracts/utils/Strings.sol",
       "solcConfig": {
@@ -275,13 +328,13 @@
           }
         },
         "zksolc": {
-          "version": "1.1.6",
+          "version": "1.2.0",
           "compilerSource": "docker",
           "settings": {
             "compilerPath": "",
             "experimental": {
               "dockerImage": "matterlabs/zksolc",
-              "tag": "v1.1.6"
+              "tag": "v1.2.0"
             },
             "optimizer": {
               "enabled": true
@@ -295,6 +348,102 @@
       ],
       "artifacts": [
         "Strings"
+      ]
+    },
+    "/mnt/c/Users/chaitanya/Documents/projects/dexchange/dexchange/node_modules/@openzeppelin/contracts/utils/Address.sol": {
+      "lastModificationDate": 1667200262143,
+      "contentHash": "c476b3895a94798b88a4bb97399e6dfe",
+      "sourceName": "@openzeppelin/contracts/utils/Address.sol",
+      "solcConfig": {
+        "version": "0.8.16",
+        "settings": {
+          "optimizer": {
+            "enabled": true
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        },
+        "zksolc": {
+          "version": "1.2.0",
+          "compilerSource": "docker",
+          "settings": {
+            "compilerPath": "",
+            "experimental": {
+              "dockerImage": "matterlabs/zksolc",
+              "tag": "v1.2.0"
+            },
+            "optimizer": {
+              "enabled": true
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.1"
+      ],
+      "artifacts": [
+        "Address"
+      ]
+    },
+    "/mnt/c/Users/chaitanya/Documents/projects/dexchange/dexchange/node_modules/@openzeppelin/contracts/token/ERC20/extensions/draft-IERC20Permit.sol": {
+      "lastModificationDate": 1667200338832,
+      "contentHash": "fb77f144244b9ab12533aa6ce85ef8c5",
+      "sourceName": "@openzeppelin/contracts/token/ERC20/extensions/draft-IERC20Permit.sol",
+      "solcConfig": {
+        "version": "0.8.16",
+        "settings": {
+          "optimizer": {
+            "enabled": true
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        },
+        "zksolc": {
+          "version": "1.2.0",
+          "compilerSource": "docker",
+          "settings": {
+            "compilerPath": "",
+            "experimental": {
+              "dockerImage": "matterlabs/zksolc",
+              "tag": "v1.2.0"
+            },
+            "optimizer": {
+              "enabled": true
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "IERC20Permit"
       ]
     }
   }
