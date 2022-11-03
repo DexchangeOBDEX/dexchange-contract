@@ -2,14 +2,15 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 
 /// @title Contract for Dexchange app
 /// @author Amit Sharma
 /// @notice The contract may be updated over period of time
-contract Dexchange is Ownable {
+contract Dexchange is EIP712, Ownable {
     using SafeERC20 for IERC20;
     using ECDSA for bytes32;
 
@@ -21,6 +22,19 @@ contract Dexchange is Ownable {
     mapping(bytes32 => bool) private _nonces;
     mapping(bytes32 => uint256) private _partiallyFilledOrderQuantity;
 
+    bytes32 private constant _DEPOSIT_TYPEHASH =
+        keccak256(
+            "DepositToken(address token,address owner,uint256 value,string memory nonce)"
+        );
+    bytes32 private constant _WITHDRAW_TYPEHASH =
+        keccak256(
+            "WithdrawToken(address token,address owner,uint256 value,string memory nonce)"
+        );
+    bytes32 private constant _ORDER_TYPEHASH =
+        keccak256(
+            "Order(string nonce,address user,uint256 amount,string market,string orderType,string orderSide,uint256 rate)"
+        );
+
     /// @notice Events emitted by the contract.
     event Deposit(address token, address user, uint256 amount);
     event Withdraw(address token, address user, uint256 amount);
@@ -29,7 +43,7 @@ contract Dexchange is Ownable {
         address _forwarder,
         address _feeAccount,
         uint256 _feePercent
-    ) {
+    ) EIP712("Dexchange", "1") {
         forwarder = _forwarder;
         feeAccount = _feeAccount;
         feePercent = _feePercent;
@@ -64,10 +78,16 @@ contract Dexchange is Ownable {
         address _token,
         address _owner,
         uint256 _value,
-        string memory _nonce,
-        bytes memory _signature
+        string calldata _nonce,
+        bytes calldata _signature
     ) external {
-        _verifySig(_token, _owner, _value, _nonce, _signature);
+        bytes32 digest = _calculateDigest(
+            keccak256(
+                abi.encode(_DEPOSIT_TYPEHASH, _token, _owner, _value, _nonce)
+            )
+        );
+        _validateRecoveredAddress(digest, _owner, _signature);
+        _nonces[digest] = true;
         IERC20(_token).safeTransferFrom(_owner, address(this), _value);
         tokensBalance[_token][_owner] += _value;
         emit Deposit(_token, _owner, _value);
@@ -79,10 +99,17 @@ contract Dexchange is Ownable {
         address _token,
         address _owner,
         uint256 _value,
-        string memory _nonce,
-        bytes memory _signature
+        string calldata _nonce,
+        bytes calldata _signature
     ) external {
-        _verifySig(_token, _owner, _value, _nonce, _signature);
+        bytes32 digest = _calculateDigest(
+            keccak256(
+                abi.encode(_WITHDRAW_TYPEHASH, _token, _owner, _value, _nonce)
+            )
+        );
+        _validateRecoveredAddress(digest, _owner, _signature);
+        _nonces[digest] = true;
+        require(tokensBalance[_token][_owner] >= _value);
         tokensBalance[_token][_owner] -= _value;
         IERC20(_token).safeTransfer(_owner, _value);
         emit Withdraw(_token, _owner, _value);
@@ -116,19 +143,26 @@ contract Dexchange is Ownable {
     }
 
     function trade(
-        Order memory _buy,
-        Order memory _sell,
-        OrderBookTrade memory _order
+        Order calldata _buy,
+        Order calldata _sell,
+        OrderBookTrade calldata _order
     ) external {
-        uint256 orderAmount = verify(_buy, _sell, _order);
-        require(orderAmount != 0);
+        uint256 orderAmount = _verify(_buy, _sell, _order);
+        require(orderAmount != 0, "Invalid order");
 
-        uint256 buyAmount = (orderAmount * 1e8) / _order.rate;
+        uint256 buyAmount = (orderAmount * _order.rate) /
+            10**IERC20Metadata(_order.baseAsset).decimals();
         uint256 _feeAmountBuyer = (orderAmount * feePercent) / 100;
         uint256 _feeAmountSeller = (buyAmount * feePercent) / 100;
 
-        require(tokensBalance[_order.quoteAsset][_buy.user] >= buyAmount);
-        require(tokensBalance[_order.baseAsset][_sell.user] >= orderAmount);
+        require(
+            tokensBalance[_order.quoteAsset][_buy.user] >= buyAmount,
+            "Buyer: Insuffient balance"
+        );
+        require(
+            tokensBalance[_order.baseAsset][_sell.user] >= orderAmount,
+            "Seller: Insufficient balance"
+        );
 
         tokensBalance[_order.baseAsset][feeAccount] += _feeAmountBuyer;
         tokensBalance[_order.quoteAsset][feeAccount] += _feeAmountSeller;
@@ -141,112 +175,90 @@ contract Dexchange is Ownable {
             _feeAmountBuyer);
     }
 
-    function verify(
-        Order memory _buyOrder,
-        Order memory _sellOrder,
-        OrderBookTrade memory orderBookTrade
-    ) internal returns (uint256 orderAmount) {
-        bytes32 messageHashBuyer = getHash(
-            _buyOrder.nonce,
+    function _verify(
+        Order calldata _buyOrder,
+        Order calldata _sellOrder,
+        OrderBookTrade calldata orderBookTrade
+    ) internal returns (uint256) {
+        bytes32 buyOrderDigest = _calculateDigest(
+            keccak256(
+                abi.encode(
+                    _ORDER_TYPEHASH,
+                    _buyOrder.nonce,
+                    _buyOrder.user,
+                    _buyOrder.amount,
+                    orderBookTrade.market,
+                    orderBookTrade.orderType,
+                    orderBookTrade.orderSide,
+                    orderBookTrade.rate
+                )
+            )
+        );
+        _validateRecoveredAddress(
+            buyOrderDigest,
             _buyOrder.user,
-            orderBookTrade.market,
-            orderBookTrade.orderType,
-            orderBookTrade.orderSide,
-            _buyOrder.amount,
-            orderBookTrade.rate
+            _buyOrder.signature
         );
-        bytes32 signedMessageHashBuyer = messageHashBuyer
-            .toEthSignedMessageHash();
 
-        require(!_nonces[signedMessageHashBuyer], "Order already executed!");
-
-        address buyer = signedMessageHashBuyer.recover(_buyOrder.signature);
-        require(buyer == _buyOrder.user, "Invalid signature");
-
-        bytes32 messageHashSeller = getHash(
-            _sellOrder.nonce,
+        bytes32 sellOrderDigest = _calculateDigest(
+            keccak256(
+                abi.encode(
+                    _ORDER_TYPEHASH,
+                    _sellOrder.nonce,
+                    _sellOrder.user,
+                    _sellOrder.amount,
+                    orderBookTrade.market,
+                    orderBookTrade.orderType,
+                    orderBookTrade.orderSide,
+                    orderBookTrade.rate
+                )
+            )
+        );
+        _validateRecoveredAddress(
+            sellOrderDigest,
             _sellOrder.user,
-            orderBookTrade.market,
-            orderBookTrade.orderType,
-            orderBookTrade.orderSide,
-            _sellOrder.amount,
-            orderBookTrade.rate
+            _sellOrder.signature
         );
-        bytes32 signedMessageHashSeller = messageHashSeller
-            .toEthSignedMessageHash();
 
-        require(!_nonces[signedMessageHashSeller], "Order already executed!");
-
-        address seller = signedMessageHashSeller.recover(_sellOrder.signature);
-        require(seller == _sellOrder.user, "Invalid signature");
-
-        uint256 buyAmount = _buyOrder.amount = _partiallyFilledOrderQuantity[
-            signedMessageHashBuyer
-        ];
-        uint256 sellAmount = _sellOrder.amount = _partiallyFilledOrderQuantity[
-            signedMessageHashSeller
-        ];
+        uint256 buyAmount = _buyOrder.amount -
+            _partiallyFilledOrderQuantity[buyOrderDigest];
+        uint256 sellAmount = _sellOrder.amount -
+            _partiallyFilledOrderQuantity[sellOrderDigest];
 
         if (buyAmount == sellAmount) {
-            _nonces[signedMessageHashBuyer] = true;
-            _nonces[signedMessageHashSeller] = true;
+            _nonces[buyOrderDigest] = true;
+            _nonces[sellOrderDigest] = true;
             return buyAmount;
         } else if (buyAmount < sellAmount) {
-            _nonces[signedMessageHashBuyer] = true;
-            _partiallyFilledOrderQuantity[signedMessageHashSeller] += buyAmount;
+            _nonces[buyOrderDigest] = true;
+            _partiallyFilledOrderQuantity[sellOrderDigest] += buyAmount;
             return buyAmount;
         } else {
-            _nonces[signedMessageHashSeller] = true;
-            _partiallyFilledOrderQuantity[signedMessageHashBuyer] += sellAmount;
+            _nonces[sellOrderDigest] = true;
+            _partiallyFilledOrderQuantity[buyOrderDigest] += sellAmount;
             return sellAmount;
         }
     }
 
-    function getHash(
-        string memory _nonce,
-        address _wallet,
-        string memory _market,
-        string memory _type,
-        string memory _side,
-        uint256 _quantity,
-        uint256 _rate
-    ) public view returns (bytes32) {
-        return
-            keccak256(
-                abi.encodePacked(
-                    block.chainid,
-                    _nonce,
-                    _wallet,
-                    _market,
-                    _type,
-                    _side,
-                    _quantity,
-                    _rate
-                )
-            );
+    function DOMAIN_SEPARATOR() external view returns (bytes32) {
+        return _domainSeparatorV4();
     }
 
-    function _verifySig(
-        address _token,
-        address _owner,
-        uint256 _value,
-        string memory _nonce,
-        bytes memory _signature
-    ) internal {
-        bytes32 hash = keccak256(
-            abi.encodePacked(
-                block.chainid,
-                _nonce,
-                _token,
-                _owner,
-                address(this),
-                _value
-            )
-        );
-        bytes32 signedHash = hash.toEthSignedMessageHash();
-        require(!_nonces[signedHash], "Invalid nonce");
-        address signer = signedHash.recover(_signature);
-        require(_owner == signer, "Invalid signature");
-        _nonces[signedHash] = true;
+    function _validateRecoveredAddress(
+        bytes32 digest,
+        address expectedAddress,
+        bytes calldata sig
+    ) internal view {
+        require(!_nonces[digest], "Invalid nonce");
+        address recoveredAddress = digest.recover(sig);
+        require(recoveredAddress == expectedAddress, "Invalid signer");
+    }
+
+    function _calculateDigest(bytes32 hashedMessage)
+        internal
+        view
+        returns (bytes32)
+    {
+        return _hashTypedDataV4(hashedMessage);
     }
 }

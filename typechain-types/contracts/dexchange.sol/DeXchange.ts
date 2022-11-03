@@ -70,12 +70,12 @@ export declare namespace Dexchange {
 
 export interface DexchangeInterface extends utils.Interface {
   functions: {
+    "DOMAIN_SEPARATOR()": FunctionFragment;
     "balanceOf(address,address)": FunctionFragment;
     "depositToken(address,address,uint256,string,bytes)": FunctionFragment;
     "feeAccount()": FunctionFragment;
     "feePercent()": FunctionFragment;
     "forwarder()": FunctionFragment;
-    "getHash(string,address,string,string,string,uint256,uint256)": FunctionFragment;
     "owner()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "setFee(address,uint256)": FunctionFragment;
@@ -88,12 +88,12 @@ export interface DexchangeInterface extends utils.Interface {
 
   getFunction(
     nameOrSignatureOrTopic:
+      | "DOMAIN_SEPARATOR"
       | "balanceOf"
       | "depositToken"
       | "feeAccount"
       | "feePercent"
       | "forwarder"
-      | "getHash"
       | "owner"
       | "renounceOwnership"
       | "setFee"
@@ -104,6 +104,10 @@ export interface DexchangeInterface extends utils.Interface {
       | "withdrawToken"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "DOMAIN_SEPARATOR",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "balanceOf",
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
@@ -127,18 +131,6 @@ export interface DexchangeInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "forwarder", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "getHash",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
-  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
@@ -179,6 +171,10 @@ export interface DexchangeInterface extends utils.Interface {
     ]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "DOMAIN_SEPARATOR",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "depositToken",
@@ -187,7 +183,6 @@ export interface DexchangeInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "feeAccount", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "feePercent", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "forwarder", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "getHash", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
@@ -286,6 +281,8 @@ export interface Dexchange extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<[string]>;
+
     balanceOf(
       _token: PromiseOrValue<string>,
       _user: PromiseOrValue<string>,
@@ -306,17 +303,6 @@ export interface Dexchange extends BaseContract {
     feePercent(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     forwarder(overrides?: CallOverrides): Promise<[string]>;
-
-    getHash(
-      _nonce: PromiseOrValue<string>,
-      _wallet: PromiseOrValue<string>,
-      _market: PromiseOrValue<string>,
-      _type: PromiseOrValue<string>,
-      _side: PromiseOrValue<string>,
-      _quantity: PromiseOrValue<BigNumberish>,
-      _rate: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
@@ -363,6 +349,8 @@ export interface Dexchange extends BaseContract {
     ): Promise<ContractTransaction>;
   };
 
+  DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<string>;
+
   balanceOf(
     _token: PromiseOrValue<string>,
     _user: PromiseOrValue<string>,
@@ -383,17 +371,6 @@ export interface Dexchange extends BaseContract {
   feePercent(overrides?: CallOverrides): Promise<BigNumber>;
 
   forwarder(overrides?: CallOverrides): Promise<string>;
-
-  getHash(
-    _nonce: PromiseOrValue<string>,
-    _wallet: PromiseOrValue<string>,
-    _market: PromiseOrValue<string>,
-    _type: PromiseOrValue<string>,
-    _side: PromiseOrValue<string>,
-    _quantity: PromiseOrValue<BigNumberish>,
-    _rate: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<string>;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
@@ -440,6 +417,8 @@ export interface Dexchange extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<string>;
+
     balanceOf(
       _token: PromiseOrValue<string>,
       _user: PromiseOrValue<string>,
@@ -460,17 +439,6 @@ export interface Dexchange extends BaseContract {
     feePercent(overrides?: CallOverrides): Promise<BigNumber>;
 
     forwarder(overrides?: CallOverrides): Promise<string>;
-
-    getHash(
-      _nonce: PromiseOrValue<string>,
-      _wallet: PromiseOrValue<string>,
-      _market: PromiseOrValue<string>,
-      _type: PromiseOrValue<string>,
-      _side: PromiseOrValue<string>,
-      _quantity: PromiseOrValue<BigNumberish>,
-      _rate: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<string>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
@@ -541,6 +509,8 @@ export interface Dexchange extends BaseContract {
   };
 
   estimateGas: {
+    DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<BigNumber>;
+
     balanceOf(
       _token: PromiseOrValue<string>,
       _user: PromiseOrValue<string>,
@@ -561,17 +531,6 @@ export interface Dexchange extends BaseContract {
     feePercent(overrides?: CallOverrides): Promise<BigNumber>;
 
     forwarder(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getHash(
-      _nonce: PromiseOrValue<string>,
-      _wallet: PromiseOrValue<string>,
-      _market: PromiseOrValue<string>,
-      _type: PromiseOrValue<string>,
-      _side: PromiseOrValue<string>,
-      _quantity: PromiseOrValue<BigNumberish>,
-      _rate: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -619,6 +578,8 @@ export interface Dexchange extends BaseContract {
   };
 
   populateTransaction: {
+    DOMAIN_SEPARATOR(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     balanceOf(
       _token: PromiseOrValue<string>,
       _user: PromiseOrValue<string>,
@@ -639,17 +600,6 @@ export interface Dexchange extends BaseContract {
     feePercent(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     forwarder(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    getHash(
-      _nonce: PromiseOrValue<string>,
-      _wallet: PromiseOrValue<string>,
-      _market: PromiseOrValue<string>,
-      _type: PromiseOrValue<string>,
-      _side: PromiseOrValue<string>,
-      _quantity: PromiseOrValue<BigNumberish>,
-      _rate: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
