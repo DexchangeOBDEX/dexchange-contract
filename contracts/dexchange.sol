@@ -24,15 +24,15 @@ contract Dexchange is EIP712, Ownable {
 
     bytes32 private constant _DEPOSIT_TYPEHASH =
         keccak256(
-            "DepositToken(address token,address owner,uint256 value,string memory nonce)"
+            "DepositToken(uint256 chainId,uint128 nonce,address userAddress,address token,uint256 amount)"
         );
     bytes32 private constant _WITHDRAW_TYPEHASH =
         keccak256(
-            "WithdrawToken(address token,address owner,uint256 value,string memory nonce)"
+            "WithdrawToken(uint256 chainId,uint128 nonce,address userAddress,address token,uint256 amount)"
         );
     bytes32 private constant _ORDER_TYPEHASH =
         keccak256(
-            "Order(string nonce,address user,uint256 amount,string market,string orderType,string orderSide,uint256 rate)"
+            "Order(uint256 chainId,uint128 nonce,address userAddress,uint256 amount,string market,string orderType,string orderSide,uint256 rate)"
         );
 
     /// @notice Events emitted by the contract.
@@ -78,12 +78,19 @@ contract Dexchange is EIP712, Ownable {
         address _token,
         address _owner,
         uint256 _value,
-        string calldata _nonce,
+        uint128 _nonce,
         bytes calldata _signature
     ) external {
         bytes32 digest = _calculateDigest(
             keccak256(
-                abi.encode(_DEPOSIT_TYPEHASH, _token, _owner, _value, _nonce)
+                abi.encode(
+                    _DEPOSIT_TYPEHASH,
+                    block.chainid,
+                    _nonce,
+                    _owner,
+                    _token,
+                    _value
+                )
             )
         );
         _validateRecoveredAddress(digest, _owner, _signature);
@@ -99,12 +106,19 @@ contract Dexchange is EIP712, Ownable {
         address _token,
         address _owner,
         uint256 _value,
-        string calldata _nonce,
+        uint128 _nonce,
         bytes calldata _signature
     ) external {
         bytes32 digest = _calculateDigest(
             keccak256(
-                abi.encode(_WITHDRAW_TYPEHASH, _token, _owner, _value, _nonce)
+                abi.encode(
+                    _WITHDRAW_TYPEHASH,
+                    block.chainid,
+                    _nonce,
+                    _owner,
+                    _token,
+                    _value
+                )
             )
         );
         _validateRecoveredAddress(digest, _owner, _signature);
@@ -127,16 +141,16 @@ contract Dexchange is EIP712, Ownable {
     /************************************** Executing orders *************************************************************/
 
     struct Order {
-        string nonce;
+        uint128 nonce;
         address user;
         uint256 amount;
+        string orderType;
+        string orderSide;
         bytes signature;
     }
 
     struct OrderBookTrade {
         string market;
-        string orderType;
-        string orderSide;
         address baseAsset;
         address quoteAsset;
         uint256 rate;
@@ -152,8 +166,8 @@ contract Dexchange is EIP712, Ownable {
 
         uint256 buyAmount = (orderAmount * _order.rate) /
             10**IERC20Metadata(_order.baseAsset).decimals();
-        uint256 _feeAmountBuyer = (orderAmount * feePercent) / 100;
-        uint256 _feeAmountSeller = (buyAmount * feePercent) / 100;
+        uint256 _feeAmountBuyer = (orderAmount * feePercent) / 1000;
+        uint256 _feeAmountSeller = (buyAmount * feePercent) / 1000;
 
         require(
             tokensBalance[_order.quoteAsset][_buy.user] >= buyAmount,
@@ -184,12 +198,13 @@ contract Dexchange is EIP712, Ownable {
             keccak256(
                 abi.encode(
                     _ORDER_TYPEHASH,
+                    block.chainid,
                     _buyOrder.nonce,
                     _buyOrder.user,
                     _buyOrder.amount,
                     orderBookTrade.market,
-                    orderBookTrade.orderType,
-                    orderBookTrade.orderSide,
+                    _buyOrder.orderType,
+                    _buyOrder.orderSide,
                     orderBookTrade.rate
                 )
             )
@@ -204,12 +219,13 @@ contract Dexchange is EIP712, Ownable {
             keccak256(
                 abi.encode(
                     _ORDER_TYPEHASH,
+                    block.chainid,
                     _sellOrder.nonce,
                     _sellOrder.user,
                     _sellOrder.amount,
                     orderBookTrade.market,
-                    orderBookTrade.orderType,
-                    orderBookTrade.orderSide,
+                    _sellOrder.orderType,
+                    _sellOrder.orderSide,
                     orderBookTrade.rate
                 )
             )

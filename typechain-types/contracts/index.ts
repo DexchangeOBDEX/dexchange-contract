@@ -3,3 +3,4 @@
 /* eslint-disable */
 import type * as dexchangeSol from "./dexchange.sol";
 export type { dexchangeSol };
+export type { DexchangePaymaster } from "./DexchangePaymaster";
