@@ -29,27 +29,30 @@ import type {
 
 export declare namespace Dexchange {
   export type OrderStruct = {
-    nonce: PromiseOrValue<BigNumberish>;
+    nonce: PromiseOrValue<string>;
     user: PromiseOrValue<string>;
     amount: PromiseOrValue<BigNumberish>;
     orderType: PromiseOrValue<string>;
     orderSide: PromiseOrValue<string>;
+    rate: PromiseOrValue<BigNumberish>;
     signature: PromiseOrValue<BytesLike>;
   };
 
   export type OrderStructOutput = [
+    string,
+    string,
     BigNumber,
     string,
+    string,
     BigNumber,
-    string,
-    string,
     string
   ] & {
-    nonce: BigNumber;
+    nonce: string;
     user: string;
     amount: BigNumber;
     orderType: string;
     orderSide: string;
+    rate: BigNumber;
     signature: string;
   };
 
@@ -57,19 +60,12 @@ export declare namespace Dexchange {
     market: PromiseOrValue<string>;
     baseAsset: PromiseOrValue<string>;
     quoteAsset: PromiseOrValue<string>;
-    rate: PromiseOrValue<BigNumberish>;
   };
 
-  export type OrderBookTradeStructOutput = [
-    string,
-    string,
-    string,
-    BigNumber
-  ] & {
+  export type OrderBookTradeStructOutput = [string, string, string] & {
     market: string;
     baseAsset: string;
     quoteAsset: string;
-    rate: BigNumber;
   };
 }
 
@@ -77,7 +73,7 @@ export interface DexchangeInterface extends utils.Interface {
   functions: {
     "DOMAIN_SEPARATOR()": FunctionFragment;
     "balanceOf(address,address)": FunctionFragment;
-    "depositToken(address,address,uint256,uint128,bytes)": FunctionFragment;
+    "depositToken(address,address,uint256,string,bytes)": FunctionFragment;
     "feeAccount()": FunctionFragment;
     "feePercent()": FunctionFragment;
     "forwarder()": FunctionFragment;
@@ -86,9 +82,9 @@ export interface DexchangeInterface extends utils.Interface {
     "setFee(address,uint256)": FunctionFragment;
     "setForwarder(address)": FunctionFragment;
     "tokensBalance(address,address)": FunctionFragment;
-    "trade((uint128,address,uint256,string,string,bytes),(uint128,address,uint256,string,string,bytes),(string,address,address,uint256))": FunctionFragment;
+    "trade((string,address,uint256,string,string,uint256,bytes),(string,address,uint256,string,string,uint256,bytes),(string,address,address))": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
-    "withdrawToken(address,address,uint256,uint128,bytes)": FunctionFragment;
+    "withdrawToken(address,address,uint256,string,bytes)": FunctionFragment;
   };
 
   getFunction(
@@ -123,7 +119,7 @@ export interface DexchangeInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<string>,
       PromiseOrValue<BytesLike>
     ]
   ): string;
@@ -171,7 +167,7 @@ export interface DexchangeInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<string>,
       PromiseOrValue<BytesLike>
     ]
   ): string;
@@ -298,7 +294,7 @@ export interface Dexchange extends BaseContract {
       _token: PromiseOrValue<string>,
       _owner: PromiseOrValue<string>,
       _value: PromiseOrValue<BigNumberish>,
-      _nonce: PromiseOrValue<BigNumberish>,
+      _nonce: PromiseOrValue<string>,
       _signature: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
@@ -348,7 +344,7 @@ export interface Dexchange extends BaseContract {
       _token: PromiseOrValue<string>,
       _owner: PromiseOrValue<string>,
       _value: PromiseOrValue<BigNumberish>,
-      _nonce: PromiseOrValue<BigNumberish>,
+      _nonce: PromiseOrValue<string>,
       _signature: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
@@ -366,7 +362,7 @@ export interface Dexchange extends BaseContract {
     _token: PromiseOrValue<string>,
     _owner: PromiseOrValue<string>,
     _value: PromiseOrValue<BigNumberish>,
-    _nonce: PromiseOrValue<BigNumberish>,
+    _nonce: PromiseOrValue<string>,
     _signature: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
@@ -416,7 +412,7 @@ export interface Dexchange extends BaseContract {
     _token: PromiseOrValue<string>,
     _owner: PromiseOrValue<string>,
     _value: PromiseOrValue<BigNumberish>,
-    _nonce: PromiseOrValue<BigNumberish>,
+    _nonce: PromiseOrValue<string>,
     _signature: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
@@ -434,7 +430,7 @@ export interface Dexchange extends BaseContract {
       _token: PromiseOrValue<string>,
       _owner: PromiseOrValue<string>,
       _value: PromiseOrValue<BigNumberish>,
-      _nonce: PromiseOrValue<BigNumberish>,
+      _nonce: PromiseOrValue<string>,
       _signature: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -482,7 +478,7 @@ export interface Dexchange extends BaseContract {
       _token: PromiseOrValue<string>,
       _owner: PromiseOrValue<string>,
       _value: PromiseOrValue<BigNumberish>,
-      _nonce: PromiseOrValue<BigNumberish>,
+      _nonce: PromiseOrValue<string>,
       _signature: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -526,7 +522,7 @@ export interface Dexchange extends BaseContract {
       _token: PromiseOrValue<string>,
       _owner: PromiseOrValue<string>,
       _value: PromiseOrValue<BigNumberish>,
-      _nonce: PromiseOrValue<BigNumberish>,
+      _nonce: PromiseOrValue<string>,
       _signature: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
@@ -576,7 +572,7 @@ export interface Dexchange extends BaseContract {
       _token: PromiseOrValue<string>,
       _owner: PromiseOrValue<string>,
       _value: PromiseOrValue<BigNumberish>,
-      _nonce: PromiseOrValue<BigNumberish>,
+      _nonce: PromiseOrValue<string>,
       _signature: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
@@ -595,7 +591,7 @@ export interface Dexchange extends BaseContract {
       _token: PromiseOrValue<string>,
       _owner: PromiseOrValue<string>,
       _value: PromiseOrValue<BigNumberish>,
-      _nonce: PromiseOrValue<BigNumberish>,
+      _nonce: PromiseOrValue<string>,
       _signature: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
@@ -645,7 +641,7 @@ export interface Dexchange extends BaseContract {
       _token: PromiseOrValue<string>,
       _owner: PromiseOrValue<string>,
       _value: PromiseOrValue<BigNumberish>,
-      _nonce: PromiseOrValue<BigNumberish>,
+      _nonce: PromiseOrValue<string>,
       _signature: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;

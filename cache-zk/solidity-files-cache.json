@@ -447,8 +447,8 @@
       ]
     },
     "/mnt/c/Users/Chaitanya/Documents/Projects/dexchange/dexchange/contracts/dexchange.sol": {
-      "lastModificationDate": 1668700319611,
-      "contentHash": "27ffacec893973423fa071f5c51cd176",
+      "lastModificationDate": 1668769570038,
+      "contentHash": "80d53162564d4e4bf0f74cc57543bb6b",
       "sourceName": "contracts/dexchange.sol",
       "solcConfig": {
         "version": "0.8.16",
@@ -494,7 +494,7 @@
         "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol"
       ],
       "versionPragmas": [
-        "^0.8.9"
+        "^0.8.7"
       ],
       "artifacts": [
         "Dexchange"
@@ -2278,8 +2278,8 @@
       ]
     },
     "/mnt/c/Users/Chaitanya/Documents/Projects/Dexchange/dexchange/contracts/dexchange.sol": {
-      "lastModificationDate": 1667469898510,
-      "contentHash": "8d1e69cddc8a1462202a4136e5a1230a",
+      "lastModificationDate": 1668862507807,
+      "contentHash": "a84680a356d2ceb3bb2bfc5df4e46dc4",
       "sourceName": "contracts/dexchange.sol",
       "solcConfig": {
         "version": "0.8.16",
@@ -2325,7 +2325,7 @@
         "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol"
       ],
       "versionPragmas": [
-        "^0.8.9"
+        "^0.8.7"
       ],
       "artifacts": [
         "Dexchange"

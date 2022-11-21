@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
@@ -24,15 +24,15 @@ contract Dexchange is EIP712, Ownable {
 
     bytes32 private constant _DEPOSIT_TYPEHASH =
         keccak256(
-            "DepositToken(uint256 chainId,uint128 nonce,address userAddress,address token,uint256 amount)"
+            "DepositToken(uint256 chainId,string nonce,address userAddress,address token,uint256 amount)"
         );
     bytes32 private constant _WITHDRAW_TYPEHASH =
         keccak256(
-            "WithdrawToken(uint256 chainId,uint128 nonce,address userAddress,address token,uint256 amount)"
+            "WithdrawToken(uint256 chainId,string nonce,address userAddress,address token,uint256 amount)"
         );
     bytes32 private constant _ORDER_TYPEHASH =
         keccak256(
-            "Order(uint256 chainId,uint128 nonce,address userAddress,uint256 amount,string market,string orderType,string orderSide,uint256 rate)"
+            "Order(uint256 chainId,string nonce,address userAddress,uint256 amount,string market,string orderType,string orderSide,uint256 rate)"
         );
 
     /// @notice Events emitted by the contract.
@@ -78,7 +78,7 @@ contract Dexchange is EIP712, Ownable {
         address _token,
         address _owner,
         uint256 _value,
-        uint128 _nonce,
+        string calldata _nonce,
         bytes calldata _signature
     ) external {
         bytes32 digest = _calculateDigest(
@@ -86,7 +86,7 @@ contract Dexchange is EIP712, Ownable {
                 abi.encode(
                     _DEPOSIT_TYPEHASH,
                     block.chainid,
-                    _nonce,
+                    keccak256(bytes(_nonce)),
                     _owner,
                     _token,
                     _value
@@ -106,7 +106,7 @@ contract Dexchange is EIP712, Ownable {
         address _token,
         address _owner,
         uint256 _value,
-        uint128 _nonce,
+        string calldata _nonce,
         bytes calldata _signature
     ) external {
         bytes32 digest = _calculateDigest(
@@ -114,7 +114,7 @@ contract Dexchange is EIP712, Ownable {
                 abi.encode(
                     _WITHDRAW_TYPEHASH,
                     block.chainid,
-                    _nonce,
+                    keccak256(bytes(_nonce)),
                     _owner,
                     _token,
                     _value
@@ -141,11 +141,12 @@ contract Dexchange is EIP712, Ownable {
     /************************************** Executing orders *************************************************************/
 
     struct Order {
-        uint128 nonce;
+        string nonce;
         address user;
         uint256 amount;
         string orderType;
         string orderSide;
+        uint256 rate;
         bytes signature;
     }
 
@@ -153,7 +154,6 @@ contract Dexchange is EIP712, Ownable {
         string market;
         address baseAsset;
         address quoteAsset;
-        uint256 rate;
     }
 
     function trade(
@@ -164,8 +164,9 @@ contract Dexchange is EIP712, Ownable {
         uint256 orderAmount = _verify(_buy, _sell, _order);
         require(orderAmount != 0, "Invalid order");
 
-        uint256 buyAmount = (orderAmount * _order.rate) /
-            10**IERC20Metadata(_order.baseAsset).decimals();
+        uint256 buyAmount = (
+            orderAmount * _buy.rate == 0 ? _sell.rate : _buy.rate
+        ) / 10**IERC20Metadata(_order.baseAsset).decimals();
         uint256 _feeAmountBuyer = (orderAmount * feePercent) / 1000;
         uint256 _feeAmountSeller = (buyAmount * feePercent) / 1000;
 
@@ -199,13 +200,13 @@ contract Dexchange is EIP712, Ownable {
                 abi.encode(
                     _ORDER_TYPEHASH,
                     block.chainid,
-                    _buyOrder.nonce,
+                    keccak256(bytes(_buyOrder.nonce)),
                     _buyOrder.user,
                     _buyOrder.amount,
-                    orderBookTrade.market,
-                    _buyOrder.orderType,
-                    _buyOrder.orderSide,
-                    orderBookTrade.rate
+                    keccak256(bytes(orderBookTrade.market)),
+                    keccak256(bytes(_buyOrder.orderType)),
+                    keccak256(bytes(_buyOrder.orderSide)),
+                    _buyOrder.rate
                 )
             )
         );
@@ -220,13 +221,13 @@ contract Dexchange is EIP712, Ownable {
                 abi.encode(
                     _ORDER_TYPEHASH,
                     block.chainid,
-                    _sellOrder.nonce,
+                    keccak256(bytes(_sellOrder.nonce)),
                     _sellOrder.user,
                     _sellOrder.amount,
-                    orderBookTrade.market,
-                    _sellOrder.orderType,
-                    _sellOrder.orderSide,
-                    orderBookTrade.rate
+                    keccak256(bytes(orderBookTrade.market)),
+                    keccak256(bytes(_sellOrder.orderType)),
+                    keccak256(bytes(_sellOrder.orderSide)),
+                    _sellOrder.rate
                 )
             )
         );
