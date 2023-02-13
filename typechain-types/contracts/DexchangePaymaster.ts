@@ -75,15 +75,11 @@ export type TransactionStructOutput = [
 export interface DexchangePaymasterInterface extends utils.Interface {
   functions: {
     "postOp(bytes,(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256[6],bytes,bytes,bytes32[],bytes,bytes),bytes32,bytes32,uint8,uint256)": FunctionFragment;
-    "relayer()": FunctionFragment;
     "validateAndPayForPaymasterTransaction(bytes32,bytes32,(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256[6],bytes,bytes,bytes32[],bytes,bytes))": FunctionFragment;
   };
 
   getFunction(
-    nameOrSignatureOrTopic:
-      | "postOp"
-      | "relayer"
-      | "validateAndPayForPaymasterTransaction"
+    nameOrSignatureOrTopic: "postOp" | "validateAndPayForPaymasterTransaction"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -97,7 +93,6 @@ export interface DexchangePaymasterInterface extends utils.Interface {
       PromiseOrValue<BigNumberish>
     ]
   ): string;
-  encodeFunctionData(functionFragment: "relayer", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "validateAndPayForPaymasterTransaction",
     values: [
@@ -108,7 +103,6 @@ export interface DexchangePaymasterInterface extends utils.Interface {
   ): string;
 
   decodeFunctionResult(functionFragment: "postOp", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "relayer", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "validateAndPayForPaymasterTransaction",
     data: BytesLike
@@ -154,8 +148,6 @@ export interface DexchangePaymaster extends BaseContract {
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    relayer(overrides?: CallOverrides): Promise<[string]>;
-
     validateAndPayForPaymasterTransaction(
       _txHash: PromiseOrValue<BytesLike>,
       _suggestedSignedHash: PromiseOrValue<BytesLike>,
@@ -174,8 +166,6 @@ export interface DexchangePaymaster extends BaseContract {
     overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  relayer(overrides?: CallOverrides): Promise<string>;
-
   validateAndPayForPaymasterTransaction(
     _txHash: PromiseOrValue<BytesLike>,
     _suggestedSignedHash: PromiseOrValue<BytesLike>,
@@ -193,8 +183,6 @@ export interface DexchangePaymaster extends BaseContract {
       _maxRefundedErgs: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    relayer(overrides?: CallOverrides): Promise<string>;
 
     validateAndPayForPaymasterTransaction(
       _txHash: PromiseOrValue<BytesLike>,
@@ -217,8 +205,6 @@ export interface DexchangePaymaster extends BaseContract {
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    relayer(overrides?: CallOverrides): Promise<BigNumber>;
-
     validateAndPayForPaymasterTransaction(
       _txHash: PromiseOrValue<BytesLike>,
       _suggestedSignedHash: PromiseOrValue<BytesLike>,
@@ -237,8 +223,6 @@ export interface DexchangePaymaster extends BaseContract {
       _maxRefundedErgs: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
-
-    relayer(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     validateAndPayForPaymasterTransaction(
       _txHash: PromiseOrValue<BytesLike>,

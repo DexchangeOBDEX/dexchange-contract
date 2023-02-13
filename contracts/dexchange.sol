@@ -73,15 +73,14 @@ contract Dexchange is EIP712, Ownable {
     /************************************** DEPOSIT & WITHDRAW TOKENS *************************************************************/
 
     /// @notice The function to deposit tokens from user wallet to the contract.
-    //TODO: Only allow forwarder
     function depositToken(
         address _token,
         address _owner,
         uint256 _value,
         string calldata _nonce,
         bytes calldata _signature
-    ) external {
-        bytes32 digest = _calculateDigest(
+    ) external onlyForwarder {
+        bytes32 digest = _hashTypedDataV4(
             keccak256(
                 abi.encode(
                     _DEPOSIT_TYPEHASH,
@@ -101,15 +100,14 @@ contract Dexchange is EIP712, Ownable {
     }
 
     /// @notice The function to withdraw tokens from the contract to the user wallet.
-    //TODO: Only allow forwarder
     function withdrawToken(
         address _token,
         address _owner,
         uint256 _value,
         string calldata _nonce,
         bytes calldata _signature
-    ) external {
-        bytes32 digest = _calculateDigest(
+    ) external onlyForwarder {
+        bytes32 digest = _hashTypedDataV4(
             keccak256(
                 abi.encode(
                     _WITHDRAW_TYPEHASH,
@@ -160,34 +158,25 @@ contract Dexchange is EIP712, Ownable {
         Order calldata _buy,
         Order calldata _sell,
         OrderBookTrade calldata _order
-    ) external {
+    ) external onlyForwarder {
         uint256 orderAmount = _verify(_buy, _sell, _order);
         require(orderAmount != 0, "Invalid order");
 
-        uint256 buyAmount = (
-            orderAmount * _buy.rate == 0 ? _sell.rate : _buy.rate
-        ) / 10**IERC20Metadata(_order.baseAsset).decimals();
+        uint256 buyAmount =
+            (orderAmount * _buy.rate == 0 ? _sell.rate : _buy.rate) / 10**IERC20Metadata(_order.baseAsset).decimals();
         uint256 _feeAmountBuyer = (orderAmount * feePercent) / 1000;
         uint256 _feeAmountSeller = (buyAmount * feePercent) / 1000;
 
-        require(
-            tokensBalance[_order.quoteAsset][_buy.user] >= buyAmount,
-            "Buyer: Insuffient balance"
-        );
-        require(
-            tokensBalance[_order.baseAsset][_sell.user] >= orderAmount,
-            "Seller: Insufficient balance"
-        );
+        require(tokensBalance[_order.quoteAsset][_buy.user] >= buyAmount, "Buyer: Insuffient balance");
+        require(tokensBalance[_order.baseAsset][_sell.user] >= orderAmount, "Seller: Insufficient balance");
 
         tokensBalance[_order.baseAsset][feeAccount] += _feeAmountBuyer;
         tokensBalance[_order.quoteAsset][feeAccount] += _feeAmountSeller;
 
         tokensBalance[_order.quoteAsset][_buy.user] -= buyAmount;
         tokensBalance[_order.baseAsset][_sell.user] -= orderAmount;
-        tokensBalance[_order.quoteAsset][_sell.user] += (buyAmount -
-            _feeAmountSeller);
-        tokensBalance[_order.baseAsset][_buy.user] += (orderAmount -
-            _feeAmountBuyer);
+        tokensBalance[_order.quoteAsset][_sell.user] += (buyAmount - _feeAmountSeller);
+        tokensBalance[_order.baseAsset][_buy.user] += (orderAmount - _feeAmountBuyer);
     }
 
     function _verify(
@@ -195,7 +184,7 @@ contract Dexchange is EIP712, Ownable {
         Order calldata _sellOrder,
         OrderBookTrade calldata orderBookTrade
     ) internal returns (uint256) {
-        bytes32 buyOrderDigest = _calculateDigest(
+        bytes32 buyOrderDigest = _hashTypedDataV4(
             keccak256(
                 abi.encode(
                     _ORDER_TYPEHASH,
@@ -210,13 +199,9 @@ contract Dexchange is EIP712, Ownable {
                 )
             )
         );
-        _validateRecoveredAddress(
-            buyOrderDigest,
-            _buyOrder.user,
-            _buyOrder.signature
-        );
+        _validateRecoveredAddress(buyOrderDigest, _buyOrder.user, _buyOrder.signature);
 
-        bytes32 sellOrderDigest = _calculateDigest(
+        bytes32 sellOrderDigest = _hashTypedDataV4(
             keccak256(
                 abi.encode(
                     _ORDER_TYPEHASH,
@@ -231,16 +216,10 @@ contract Dexchange is EIP712, Ownable {
                 )
             )
         );
-        _validateRecoveredAddress(
-            sellOrderDigest,
-            _sellOrder.user,
-            _sellOrder.signature
-        );
+        _validateRecoveredAddress(sellOrderDigest, _sellOrder.user, _sellOrder.signature);
 
-        uint256 buyAmount = _buyOrder.amount -
-            _partiallyFilledOrderQuantity[buyOrderDigest];
-        uint256 sellAmount = _sellOrder.amount -
-            _partiallyFilledOrderQuantity[sellOrderDigest];
+        uint256 buyAmount = _buyOrder.amount - _partiallyFilledOrderQuantity[buyOrderDigest];
+        uint256 sellAmount = _sellOrder.amount - _partiallyFilledOrderQuantity[sellOrderDigest];
 
         if (buyAmount == sellAmount) {
             _nonces[buyOrderDigest] = true;
@@ -269,13 +248,5 @@ contract Dexchange is EIP712, Ownable {
         require(!_nonces[digest], "Invalid nonce");
         address recoveredAddress = digest.recover(sig);
         require(recoveredAddress == expectedAddress, "Invalid signer");
-    }
-
-    function _calculateDigest(bytes32 hashedMessage)
-        internal
-        view
-        returns (bytes32)
-    {
-        return _hashTypedDataV4(hashedMessage);
     }
 }

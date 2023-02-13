@@ -1,3 +1,5 @@
 .env
 node_modules
-deploy.ts
+artifacts-zk
+cache-zk
+typechain-types
