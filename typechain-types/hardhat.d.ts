@@ -13,50 +13,6 @@ import * as Contracts from ".";
 declare module "hardhat/types/runtime" {
   interface HardhatEthersHelpers extends HardhatEthersHelpersBase {
     getContractFactory(
-      name: "IAccountCodeStorage",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IAccountCodeStorage__factory>;
-    getContractFactory(
-      name: "IContractDeployer",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IContractDeployer__factory>;
-    getContractFactory(
-      name: "IERC20",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IERC20__factory>;
-    getContractFactory(
-      name: "IEthToken",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IEthToken__factory>;
-    getContractFactory(
-      name: "IImmutableSimulator",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IImmutableSimulator__factory>;
-    getContractFactory(
-      name: "IKnownCodesStorage",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IKnownCodesStorage__factory>;
-    getContractFactory(
-      name: "IL1Messenger",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IL1Messenger__factory>;
-    getContractFactory(
-      name: "INonceHolder",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.INonceHolder__factory>;
-    getContractFactory(
-      name: "IPaymaster",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IPaymaster__factory>;
-    getContractFactory(
-      name: "IPaymasterFlow",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IPaymasterFlow__factory>;
-    getContractFactory(
-      name: "ISystemContext",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.ISystemContext__factory>;
-    getContractFactory(
       name: "Ownable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Ownable__factory>;
@@ -76,66 +32,7 @@ declare module "hardhat/types/runtime" {
       name: "Dexchange",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Dexchange__factory>;
-    getContractFactory(
-      name: "DexchangePaymaster",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.DexchangePaymaster__factory>;
 
-    getContractAt(
-      name: "IAccountCodeStorage",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IAccountCodeStorage>;
-    getContractAt(
-      name: "IContractDeployer",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IContractDeployer>;
-    getContractAt(
-      name: "IERC20",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IERC20>;
-    getContractAt(
-      name: "IEthToken",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IEthToken>;
-    getContractAt(
-      name: "IImmutableSimulator",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IImmutableSimulator>;
-    getContractAt(
-      name: "IKnownCodesStorage",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IKnownCodesStorage>;
-    getContractAt(
-      name: "IL1Messenger",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IL1Messenger>;
-    getContractAt(
-      name: "INonceHolder",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.INonceHolder>;
-    getContractAt(
-      name: "IPaymaster",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IPaymaster>;
-    getContractAt(
-      name: "IPaymasterFlow",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IPaymasterFlow>;
-    getContractAt(
-      name: "ISystemContext",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.ISystemContext>;
     getContractAt(
       name: "Ownable",
       address: string,
@@ -161,11 +58,6 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.Dexchange>;
-    getContractAt(
-      name: "DexchangePaymaster",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.DexchangePaymaster>;
 
     // default types
     getContractFactory(

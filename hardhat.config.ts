@@ -6,7 +6,7 @@ require('@nomiclabs/hardhat-ethers');
 
 module.exports = {
   zksolc: {
-    version: "1.3.1",
+    version: "1.3.5",
     compilerSource: "binary",
     settings: {},
   },

@@ -5,7 +5,7 @@ import { Deployer } from '@matterlabs/hardhat-zksync-deploy';
 export default async function (hre: HardhatRuntimeEnvironment) {
   console.log(`Running deploy script for the DeXchange contract`);
 
-  const RICH_WALLET_PK = '';
+  const RICH_WALLET_PK = 'c32a630a9259a46500937491756b97aa2815190f8b5a92c16007d35d84251ba3';
 
   // Initialize the wallet.
   const wallet = new Wallet(RICH_WALLET_PK);

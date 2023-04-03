@@ -2,4 +2,3 @@
 /* tslint:disable */
 /* eslint-disable */
 export * as dexchangeSol from "./dexchange.sol";
-export { DexchangePaymaster__factory } from "./DexchangePaymaster__factory";
